@@ -1,6 +1,6 @@
 import copy
 import random
-
+from Solver import Solver
 # Constants
 WALL_V = "|"
 WALL_H = "-"
@@ -47,7 +47,6 @@ class Maze:
         walls_bottom = copy.deepcopy(walls_temp)
         for i in range(1, self.dim+1):
             if self.maze_unsolved[-2][i] == STEP and not exit_added:
-                print('Added exit')
                 walls_bottom[i] = STEP
                 exit_added = True
         if not exit_added:
@@ -56,10 +55,19 @@ class Maze:
 
 
     def solve(self):
+        starts = self.find_possible_starts()
+        print(starts)
         return False
 
-    def create_path(self):
-        return False
+    def find_possible_starts(self):
+        starts_pos = []
+        try:
+            for i in range(1, self.dim+1):
+                if self.maze_unsolved[1][i] == STEP:
+                    starts_pos.append([1, i])
+        except:
+            raise RuntimeError("Map was not initiliazed before call to solve.")
+        return starts_pos
 
     def print_maze(self, solved):
         cur_maze = self.maze_unsolved
