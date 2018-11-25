@@ -1,5 +1,10 @@
 import copy
-from Maze import Maze
+
+# Constants
+WALL_V = "|"
+WALL_H = "-"
+STEP   = "O"
+PATH   = "X"
 
 class Solver:
 
@@ -12,36 +17,39 @@ class Solver:
         self.maze_exit  = maze_exit
 
     def solve(self, cur_step, steps_taken):
-        # Count paths
-        paths = self.count_paths(cur_step)
+        paths = 0
         # Check if finished
         if self.is_solved(cur_step):
+            steps_taken.append(cur_step)
             self.path = steps_taken
             return True
+        else:
+            # Count paths
+            paths = self.count_paths(cur_step)
         # Dead end
-        elif paths == 0:
+        if paths == 0:
             return None
         # Single Path
         elif paths == 1:
             next_steps = copy.deepcopy(steps_taken)
             next_steps.append(cur_step)
             # North
-            if self.maze[cur_step[0]][cur_step[1]-1] == Maze.STEP and not self.traveled_to([cur_step[0],cur_step[1]]):
-                new_move = self.solve([cur_step[0], cur_step[1]-1], next_steps)
-                if new_move is not None:
-                    return new_move
-            # East
-            elif self.maze[cur_step[0]][cur_step[1]-1] == Maze.STEP and not self.traveled_to([cur_step[0],cur_step[1]]):
-                new_move = self.solve([cur_step[0]+1, cur_step[1]], next_steps)
-                if new_move is not None:
-                    return new_move
-            # West
-            elif self.maze[cur_step[0]][cur_step[1]-1] == Maze.STEP and not self.traveled_to([cur_step[0],cur_step[1]]):
+            if self.maze[cur_step[0]-1][cur_step[1]] == STEP and not self.traveled_to([cur_step[0],cur_step[1]], steps_taken):
                 new_move = self.solve([cur_step[0]-1, cur_step[1]], next_steps)
                 if new_move is not None:
                     return new_move
+            # East
+            elif self.maze[cur_step[0]][cur_step[1]+1] == STEP and not self.traveled_to([cur_step[0],cur_step[1]], steps_taken):
+                new_move = self.solve([cur_step[0], cur_step[1]+1], next_steps)
+                if new_move is not None:
+                    return new_move
+            # West
+            elif self.maze[cur_step[0]][cur_step[1]-1] == STEP and not self.traveled_to([cur_step[0],cur_step[1]], steps_taken):
+                new_move = self.solve([cur_step[0], cur_step[1]-1], next_steps)
+                if new_move is not None:
+                    return new_move
             # South
-            elif self.maze[cur_step[0]][cur_step[1]-1] == Maze.STEP and not self.traveled_to([cur_step[0],cur_step[1]]):
+            elif self.maze[cur_step[0]+1][cur_step[1]] == STEP and not self.traveled_to([cur_step[0],cur_step[1]], steps_taken):
                 new_move = self.solve([cur_step[0]+1, cur_step[1]], next_steps)
                 if new_move is not None:
                     return new_move
@@ -49,35 +57,52 @@ class Solver:
                 return None
         # Multiple Paths
         elif paths > 1:
-            next_steps = copy.deepcopy(steps_taken)
-            next_steps.append(cur_step)
             # North
-            if self.maze[cur_step[0]][cur_step[1]-1] == Maze.STEP and not self.traveled_to([cur_step[0],cur_step[1]]):
-                new_move = self.solve([cur_step[0], cur_step[1]-1], next_steps)
-                if new_move is not None:
-                    return new_move
-            # East
-            if self.maze[cur_step[0]][cur_step[1]-1] == Maze.STEP and not self.traveled_to([cur_step[0],cur_step[1]]):
-                new_move = self.solve([cur_step[0]+1, cur_step[1]], next_steps)
-                if new_move is not None:
-                    return new_move
-            # West
-            if self.maze[cur_step[0]][cur_step[1]-1] == Maze.STEP and not self.traveled_to([cur_step[0],cur_step[1]]):
+            if self.maze[cur_step[0]-1][cur_step[1]] == STEP and not self.traveled_to([cur_step[0],cur_step[1]], steps_taken):
+                next_steps = copy.deepcopy(steps_taken)
+                next_steps.append(cur_step)
                 new_move = self.solve([cur_step[0]-1, cur_step[1]], next_steps)
                 if new_move is not None:
                     return new_move
+            # East
+            if self.maze[cur_step[0]][cur_step[1]+1] == STEP and not self.traveled_to([cur_step[0],cur_step[1]], steps_taken):
+                next_steps = copy.deepcopy(steps_taken)
+                next_steps.append(cur_step)
+                new_move = self.solve([cur_step[0], cur_step[1]+1], next_steps)
+                if new_move is not None:
+                    return new_move
+            # West
+            if self.maze[cur_step[0]][cur_step[1]-1] == STEP and not self.traveled_to([cur_step[0],cur_step[1]], steps_taken):
+                next_steps = copy.deepcopy(steps_taken)
+                next_steps.append(cur_step)
+                new_move = self.solve([cur_step[0], cur_step[1]-1], next_steps)
+                if new_move is not None:
+                    return new_move
             # South
-            if self.maze[cur_step[0]][cur_step[1]-1] == Maze.STEP and not self.traveled_to([cur_step[0],cur_step[1]]):
+            if self.maze[cur_step[0]+1][cur_step[1]] == STEP and not self.traveled_to([cur_step[0],cur_step[1]], steps_taken):
+                next_steps = copy.deepcopy(steps_taken)
+                next_steps.append(cur_step)
                 new_move = self.solve([cur_step[0]+1, cur_step[1]], next_steps)
                 if new_move is not None:
                     return new_move
             else:
                 return None
 
-        return False
-
     def count_paths(self, cur_step):
-        return False
+        path_count = 0
+         # North
+        if self.maze[cur_step[0]-1][cur_step[1]] == STEP:
+            path_count += 1
+        # East
+        if self.maze[cur_step[0]][cur_step[1]+1] == STEP:
+            path_count += 1
+        # South
+        if self.maze[cur_step[0]+1][cur_step[1]] == STEP:
+            path_count += 1
+        # West
+        if self.maze[cur_step[0]][cur_step[1]-1] == STEP:
+            path_count += 1
+        return path_count
 
     def traveled_to(self, cur_step, steps_taken):
         if len(steps_taken) != 0:

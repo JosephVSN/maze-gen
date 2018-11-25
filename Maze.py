@@ -13,6 +13,7 @@ class Maze:
     dim           = 0
     maze_unsolved = []
     maze_solved   = []
+    maze_exit     = []
     start         = []
     is_valid      = False
 
@@ -20,10 +21,18 @@ class Maze:
         # Initialize maze
         self.dim = dim
         self.create_maze()
-        # Check if we created a valid maze
+        # Re-create until we get a valid maze
         self.is_valid = self.solve()
+        while not self.is_valid:
+            self.maze_unsolved = []
+            self.maze_exit = []
+            self.maze_start = []
+            self.create_maze()
+            self.is_valid = self.solve()
 
     def create_maze(self):
+        # Seed random
+        random.seed()
         # Create top and bottom walls
         walls_temp = []
         for i in range(0, self.dim+2):
@@ -46,18 +55,22 @@ class Maze:
         exit_added = False
         walls_bottom = copy.deepcopy(walls_temp)
         for i in range(1, self.dim+1):
-            if self.maze_unsolved[-2][i] == STEP and not exit_added:
+            if self.maze_unsolved[self.dim][i] == STEP and not exit_added:
                 walls_bottom[i] = STEP
+                self.maze_exit = [self.dim+1, i]
                 exit_added = True
-        if not exit_added:
-            print("Bad maze")
         self.maze_unsolved.append(walls_bottom)
 
 
     def solve(self):
         starts = self.find_possible_starts()
-        print(starts)
-        return False
+        if len(self.maze_exit) == 0 or len(starts) == 0:
+            return
+        s = Solver(self.maze_unsolved, self.maze_exit)
+        for start in starts:
+            if s.solve(start, []):
+                self.generate_solution(s.path)
+                return True
 
     def find_possible_starts(self):
         starts_pos = []
@@ -77,3 +90,9 @@ class Maze:
             for j in range(0, self.dim+2):
                 print(cur_maze[i][j] + " ", end = '')
             print()
+
+    def generate_solution(self, path):
+        # Copy unsolved maze to solved maze
+        self.maze_solved = copy.deepcopy(self.maze_unsolved)
+        for step in path:
+            self.maze_solved[step[0]][step[1]] = PATH
